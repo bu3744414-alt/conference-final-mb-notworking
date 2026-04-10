@@ -286,8 +286,9 @@ function openRescheduleModal(booking) {
     document.getElementById("rescheduleModal").style.display = "block";
 }
 
-function closeAllModals(){
-    document.querySelectorAll(".modal, .popup-overlay").forEach(el => {
-        el.style.display = "none";
+function closeAllModals() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(m => {
+        m.style.display = 'none';
     });
 }

@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Conference Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
@@ -267,10 +268,10 @@
   <input type="date" id="bookingDate" name="date" required>
 
   <label>Start Time</label>
-  <input type="time" id="startTime" name="start_time" required>
+  <input type="text" id="startTime" name="start_time" required>
 
   <label>End Time</label>
-  <input type="time" id="endTime" name="end_time" required>
+  <input type="text" id="endTime" name="end_time" required>
 
   <!-- PURPOSE FIELD -->
   <label>Purpose *</label>
@@ -344,7 +345,7 @@
   </div>
 </div>
 
-<!-- CORPORATE ADMIN SETTINGS -->
+<!-- CORPORATE ADMIN SETTINGS 
 <div id="settingsModal" class="modal">
   <div class="modal-box corporate-settings">
     <h2>Admin Control Center</h2>
@@ -355,8 +356,8 @@
         <button class="corp-btn success" onclick="openExport()">📊 Export Reports</button>
         <button class="corp-btn neutral" onclick="closeSettings()">Close</button>
     </div>
-  </div> <!-- closes main -->
-</div> <!-- closes container -->
+  </div> 
+</div> -->
 
 
 <!-- RENAME HALLS MODAL -->
@@ -414,7 +415,24 @@
 <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 <script src="{{ url_for('static', filename='js/availability.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+
+<script>
+flatpickr("#startTime", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "h:i K",   // AM/PM
+    time_24hr: false
+});
+
+flatpickr("#endTime", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "h:i K",
+    time_24hr: false
+});
+</script>
 
 </body>
 </html>

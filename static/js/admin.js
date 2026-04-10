@@ -260,26 +260,30 @@ async function deleteHall(name){
 
 /* SETTINGS PANEL */
 /*function openSettings(){
+closeAllModals();
     document.getElementById("settingsModal").style.display = "flex";
 }
 
 function closeSettings(){
+closeAllModals();
     document.getElementById("settingsModal").style.display = "none";
 }
 
 
 function openExport(){
+    closeAllModals();
     document.getElementById("exportModal").style.display = "flex";
 }
 
 function closeExport(){
+    closeAllModals();
     document.getElementById("exportModal").style.display = "none";
 }
 */
 
 /* EXPORTBOOKINGS  */
 /*async function exportReport(){
-
+    closeAllModals();
     const start = document.getElementById("exportStart").value;
     const end = document.getElementById("exportEnd").value;
 

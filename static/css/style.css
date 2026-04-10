@@ -892,11 +892,7 @@ font-size:14px;
     color:#555;
     font-style:italic;
 }
-.booking-card{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+
 /* LOGOUT BUTTON */
 .logout{
     background:#334155;
@@ -1027,18 +1023,7 @@ font-size:14px;
 .menu-btn:hover {
   background: #000;
 }
-.menu-popup {
-  position: absolute;
-  right: 0;
-  top: 30px;
-  background: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 6px;
-  z-index: 999;
-  min-width: 140px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+
 
 .menu-popup button {
   display: block;
@@ -1146,30 +1131,22 @@ font-size:14px;
     z-index: 1;
     background: #f5f6f8; /* or your normal bg */
 }
-.booking-card {
-    background:white;
-    padding:16px;
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.08);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    position: relative;
-    z-index: 2;
-    overflow: visible;   /* IMPORTANT */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.modal,
-#bookingModal,
-.popup-container {
+
+.modal-box {
     max-height: 90vh;
     overflow-y: auto;
 }
 body {
     overflow-y: auto;
-}
-.modal,
-.popup-overlay {
-    z-index: 9999;
 }
 
 .modal {
