@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Conference Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
@@ -53,83 +52,12 @@
         <a href="/logout" class="menu-logout">Logout</a>
     </div>
 </div>
-<!-- DASHBOARD PANEL -->
+
 <div id="dashboardPanel" class="dashboard-layout">
-
-    <div class="room-grid">
-
-        {% for hall in halls %}
-
-        <!-- FIRST FLOOR BIG -->
-        {% if hall[0] == 101 %}
-        <div class="room-card">
-            <img src="{{ url_for('static', filename='room/Big_conference-hall-1.jpeg') }}?v=2">
-            <div class="room-info">
-                <h3>{{ hall[1] }}</h3>
-                <p>1st Floor</p>
-                <p class="capacity">Capacity: 15 People</p>
-                <button onclick="reserveHall('101')">Reserve</button>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- FIRST FLOOR SMALL -->
-        {% if hall[0] == 102 %}
-        <div class="room-card">
-            <img src="{{ url_for('static', filename='room/Small_conference-hall-1.jpeg') }}?v=2">
-            <div class="room-info">
-                <h3>{{ hall[1] }}</h3>
-                <p>1st Floor</p>
-                <p class="capacity">Capacity: 7 People</p>
-                <button onclick="reserveHall('102')">Reserve</button>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- SECOND FLOOR -->
-        {% if hall[0] == 201 %}
-        <div class="room-card">
-            <img src="{{ url_for('static', filename='room/conference-hall-2nd.jpeg') }}">
-            <div class="room-info">
-                <h3>{{ hall[1] }}</h3>
-                <p>2nd Floor</p>
-                <p class="capacity">Capacity: 60 People</p>
-                <button onclick="reserveHall('201')">Reserve</button>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- THIRD FLOOR -->
-        {% if hall[0] == 301 %}
-        <div class="room-card">
-            <img src="{{ url_for('static', filename='room/conference-hall-3rd.jpeg') }}?v=2">
-            <div class="room-info">
-                <h3>{{ hall[1] }}</h3>
-                <p>3rd Floor</p>
-                <p class="capacity">Capacity: 9 People</p>
-                <button onclick="reserveHall('301')">Reserve</button>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- FOURTH FLOOR -->
-        {% if hall[0] == 401 %}
-        <div class="room-card">
-            <img src="{{ url_for('static', filename='room/conference-hall-4th.jpeg') }}?v=2">
-            <div class="room-info">
-                <h3>{{ hall[1] }}</h3>
-                <p>4th Floor</p>
-                <p class="capacity">Capacity: 7 People</p>
-                <button onclick="reserveHall('401')">Reserve</button>
-            </div>
-        </div>
-        {% endif %}
-
-        {% endfor %}
-
-    </div>
-
+    {% include 'halls.html' %}
 </div>
+    
+
 
 <!-- AVAILABILITY PANEL -->
     <div id="availabilityPanel" style="display:none; margin-top:30px;">
@@ -139,46 +67,60 @@
     </div>
 <!-- MY BOOKINGS PANEL -->
 
-    <!-- MY BOOKINGS PANEL -->
+<!-- MY BOOKINGS PANEL -->
+<div id="myBookingsPanel" style="display:none; margin-top:30px;">
 
-    <div id="myBookingsPanel" style="display:none; margin-top:30px;">
-    <h2>My Bookings</h2>
+    <!-- 🔥 HALLS -->
+    <h2 style="margin-bottom:10px;">Available Halls</h2>
+    {% include 'halls.html' %}
 
-    <div class="date-filter" style="display:flex; gap:10px; align-items:center;">
 
-        <!-- DATE PICKER (MAIN CONTROL) -->
+    <!-- 🔥 MY BOOKINGS -->
+    <h2 style="margin-top:25px;">My Bookings</h2>
+
+    <div class="date-filter" style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
         <input type="date" id="myBookingDate">
-        <!--<button onclick="loadFromDate()">OK</button>-->
-
-        <!-- OPTIONAL MONTH PICKER 
-        <input type="month" id="monthYear">
-        <button onclick="loadMonthlyBookings()">OK</button>-->
-
     </div>
 
     <div id="myBookingsList" class="booking-list"></div>
 
-        <!-- MONTHLY TABLE BELOW -->
-        <h2 style="margin-top:30px;">Monthly Bookings</h2>
 
-        <table id="monthlyTable">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Hall</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Purpose</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
+    <!-- 🔥 MONTHLY HEADER + BUTTON -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:30px;">
 
-            <tbody id="monthlyTableBody"></tbody>
+        <h2 style="margin:0;">Monthly Bookings</h2>
 
-        </table>
+        <!-- ICON BUTTON -->
+        <div style="position:relative;">
+            <button onclick="toggleReportMenu()" class="icon-btn">🖨️</button>
 
+            <!-- DROPDOWN -->
+            <div id="reportMenu" class="dropdown-menu" style="display:none;">
+                <div onclick="downloadPDF()">Download PDF</div>
+                <div onclick="downloadExcel()">Download Excel</div>
+                <div onclick="printTable()">Print</div>
+            </div>
+        </div>
 
     </div>
+
+
+    <!-- 🔥 TABLE -->
+    <table id="monthlyTable" style="margin-top:10px;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Hall</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Purpose</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="monthlyTableBody"></tbody>
+    </table>
+
+</div>
 
 <!-- ADMIN BOOKINGS PANEL -->
     <div id="adminBookingsPanel" style="display:none; margin-top:30px;">
@@ -238,7 +180,7 @@
     <h3>Book Hall</h3>
 
 ```
-<form id="bookingForm" method="POST" action="/book">
+<form id="bookingForm">
 
   <!-- Admin can book hall for other department -->
   {% if role == 'admin' %}
@@ -268,10 +210,10 @@
   <input type="date" id="bookingDate" name="date" required>
 
   <label>Start Time</label>
-  <input type="text" id="startTime" name="start_time" required>
+  <input type="time" id="startTime" name="start_time" required>
 
   <label>End Time</label>
-  <input type="text" id="endTime" name="end_time" required>
+  <input type="time" id="endTime" name="end_time" required>
 
   <!-- PURPOSE FIELD -->
   <label>Purpose *</label>
@@ -285,7 +227,7 @@
 
   <div style="margin-top:10px;">
     <button type="button" onclick="closeModal()">Cancel</button>
-    <button type="button" onclick="submitBooking()">Book</button>
+    <button type="submit">Book</button>
   </div>
 
 </form>
@@ -305,10 +247,10 @@
         <input type="date" id="resDate">
 
         <label>Start Time</label>
-        <input type="text" id="resStart">
+        <input type="time" id="resStart">
 
         <label>End Time</label>
-        <input type="text" id="resEnd">
+        <input type="time" id="resEnd">
 
         <label>Reason</label>
         <textarea id="resReason" rows="3"
@@ -345,6 +287,19 @@
   </div>
 </div>
 
+<!-- CORPORATE ADMIN SETTINGS -->
+<div id="settingsModal" class="modal">
+  <div class="modal-box corporate-settings">
+    <h2>Admin Control Center</h2>
+    <p class="subtitle">System & Facility Management</p>
+
+    <div class="settings-grid">
+        <button class="corp-btn primary" onclick="openRenameModal()">🏢 Manage Halls</button>
+        <button class="corp-btn success" onclick="openExport()">📊 Export Reports</button>
+        <button class="corp-btn neutral" onclick="closeSettings()">Close</button>
+    </div>
+  </div> <!-- closes main -->
+</div> <!-- closes container -->
 
 
 <!-- RENAME HALLS MODAL -->
@@ -364,7 +319,7 @@
 </div>
 
 
-
+<!-- cancel booking modal -->
  <!-- CANCEL BOOKING MODAL -->
 <div id="cancelModal" class="modal">
   <div class="modal-box">
@@ -402,7 +357,6 @@
 <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 <script src="{{ url_for('static', filename='js/availability.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 
 </body>

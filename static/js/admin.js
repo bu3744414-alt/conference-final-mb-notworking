@@ -452,3 +452,43 @@ document.addEventListener("click", function(event){
         m.style.display = "none";
     });
 });
+function showSection(sectionId){
+
+    document.getElementById("hallsSection").style.display = "none";
+    document.getElementById("bookingsSection").style.display = "none";
+    document.getElementById("monthlySection").style.display = "none";
+
+    document.getElementById(sectionId).style.display = "block";
+}
+function toggleReportMenu(){
+    let menu = document.getElementById("reportMenu");
+
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
+
+// CLOSE WHEN CLICK OUTSIDE
+document.addEventListener("click", function(e){
+    let menu = document.getElementById("reportMenu");
+
+    if(!e.target.closest(".icon-btn")){
+        menu.style.display = "none";
+    }
+});
+function downloadPDF(){
+    window.open('/export-pdf', '_blank');
+}
+
+function downloadExcel(){
+    window.open('/export-excel', '_blank');
+}
+
+function printTable(){
+    let content = document.getElementById("monthlyTable").outerHTML;
+
+    let win = window.open('', '', 'width=900,height=700');
+    win.document.write('<html><body>');
+    win.document.write('<h2>Monthly Bookings</h2>');
+    win.document.write(content);
+    win.document.write('</body></html>');
+    win.print();
+}

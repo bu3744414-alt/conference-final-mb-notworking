@@ -1,0 +1,67 @@
+<div class="room-grid">
+
+    {% for hall in halls %}
+
+    {% if hall[0] == 101 %}
+    <div class="room-card">
+        <img src="{{ url_for('static', filename='room/Big_conference-hall-1.jpeg') }}?v=2">
+        <div class="room-info">
+            <h3>{{ hall[1] }}</h3>
+            <p>1st Floor</p>
+            <p class="capacity">Capacity: 15 People</p>
+            <button onclick="reserveHall('101')">Reserve</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if hall[0] == 102 %}
+    <div class="room-card">
+        <img src="{{ url_for('static', filename='room/Small_conference-hall-1.jpeg') }}?v=2">
+        <div class="room-info">
+            <h3>{{ hall[1] }}</h3>
+            <p>1st Floor</p>
+            <p class="capacity">Capacity: 7 People</p>
+            <button onclick="reserveHall('102')">Reserve</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if hall[0] == 201 and role == 'admin' %}
+    <div class="room-card">
+        <img src="{{ url_for('static', filename='room/conference-hall-2nd.jpeg') }}">
+        <div class="room-info">
+            <h3>{{ hall[1] }}</h3>
+            <p>2nd Floor</p>
+            <p class="capacity">Capacity: 60 People</p>
+            <button onclick="reserveHall('201')">Reserve</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if hall[0] == 301 %}
+    <div class="room-card">
+        <img src="{{ url_for('static', filename='room/conference-hall-3rd.jpeg') }}?v=2">
+        <div class="room-info">
+            <h3>{{ hall[1] }}</h3>
+            <p>3rd Floor</p>
+            <p class="capacity">Capacity: 9 People</p>
+            <button onclick="reserveHall('301')">Reserve</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if hall[0] == 401 %}
+    <div class="room-card">
+        <img src="{{ url_for('static', filename='room/conference-hall-4th.jpeg') }}?v=2">
+        <div class="room-info">
+            <h3>{{ hall[1] }}</h3>
+            <p>4th Floor</p>
+            <p class="capacity">Capacity: 7 People</p>
+            <button onclick="reserveHall('401')">Reserve</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+
+</div>

@@ -79,6 +79,9 @@ def book():
     meeting_date = request.form['date']
     start = request.form['start_time']
     end = request.form['end_time']
+    # 🔒 ADD HERE
+    if hall == '201' and session.get('role') != 'admin':
+        return jsonify(status="error", message="Only admin can book Auditorium")
     department = request.form.get('department')
     purpose = request.form.get('purpose')
 
