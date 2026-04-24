@@ -191,8 +191,21 @@ async function loadAdminBookings(){
             </div>
 
         </div>`;
-    });
+    });     
 }
+
+/* convert to 24hrs   */
+function convertTo24Hour(time) {
+    let [t, modifier] = time.split(" ");
+    let [hours, minutes] = t.split(":");
+
+    if (modifier === "PM" && hours !== "12") hours = +hours + 12;
+    if (modifier === "AM" && hours === "12") hours = "00";
+
+    return `${hours}:${minutes}`;
+}
+
+
 
 /* Cancel Booking  */
 async function confirmCancel(){

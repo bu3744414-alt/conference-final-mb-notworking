@@ -53,10 +53,9 @@
         <a href="/logout" class="menu-logout">Logout</a>
     </div>
 </div>
+<!-- DASHBOARD PANEL -->
+<div id="dashboardPanel" class="dashboard-layout">
 
-<div id="dashboardPanel" class="dashboard-layout"></div>
-
-    <!-- LEFT: HALL CARDS -->
     <div class="room-grid">
 
         {% for hall in halls %}
@@ -130,6 +129,7 @@
 
     </div>
 
+</div>
 
 <!-- AVAILABILITY PANEL -->
     <div id="availabilityPanel" style="display:none; margin-top:30px;">
@@ -238,7 +238,7 @@
     <h3>Book Hall</h3>
 
 ```
-<form id="bookingForm">
+<form id="bookingForm" method="POST" action="/book">
 
   <!-- Admin can book hall for other department -->
   {% if role == 'admin' %}
@@ -285,7 +285,7 @@
 
   <div style="margin-top:10px;">
     <button type="button" onclick="closeModal()">Cancel</button>
-    <button type="submit">Book</button>
+    <button type="button" onclick="submitBooking()">Book</button>
   </div>
 
 </form>
@@ -305,10 +305,10 @@
         <input type="date" id="resDate">
 
         <label>Start Time</label>
-        <input type="time" id="resStart">
+        <input type="text" id="resStart">
 
         <label>End Time</label>
-        <input type="time" id="resEnd">
+        <input type="text" id="resEnd">
 
         <label>Reason</label>
         <textarea id="resReason" rows="3"
@@ -345,19 +345,6 @@
   </div>
 </div>
 
-<!-- CORPORATE ADMIN SETTINGS 
-<div id="settingsModal" class="modal">
-  <div class="modal-box corporate-settings">
-    <h2>Admin Control Center</h2>
-    <p class="subtitle">System & Facility Management</p>
-
-    <div class="settings-grid">
-        <button class="corp-btn primary" onclick="openRenameModal()">🏢 Manage Halls</button>
-        <button class="corp-btn success" onclick="openExport()">📊 Export Reports</button>
-        <button class="corp-btn neutral" onclick="closeSettings()">Close</button>
-    </div>
-  </div> 
-</div> -->
 
 
 <!-- RENAME HALLS MODAL -->
@@ -377,7 +364,7 @@
 </div>
 
 
-<!-- cancel booking modal -->
+
  <!-- CANCEL BOOKING MODAL -->
 <div id="cancelModal" class="modal">
   <div class="modal-box">
@@ -417,22 +404,6 @@
 <script src="{{ url_for('static', filename='js/availability.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-
-<script>
-flatpickr("#startTime", {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "h:i K",   // AM/PM
-    time_24hr: false
-});
-
-flatpickr("#endTime", {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "h:i K",
-    time_24hr: false
-});
-</script>
 
 </body>
 </html>

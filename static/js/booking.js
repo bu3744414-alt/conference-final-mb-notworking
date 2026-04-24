@@ -1,12 +1,5 @@
 
 
-function openModal(){
-    const modal = document.getElementById("bookingModal");
-    const select = document.getElementById("hallSelect");
-
-    modal.style.display = "flex";
-    select.disabled = false;
-}
 
 function closeModal(){
     document.getElementById("bookingModal").style.display = "none";
@@ -15,21 +8,18 @@ function closeModal(){
 
 function reserveHall(hall){
 
-    const modal = document.getElementById("bookingModal");
+    openModal();
+
     const select = document.getElementById("hallSelect");
 
-    modal.style.display = "flex";
+    // set selected hall
+    select.value = hall;
 
-    for(let option of select.options){
-        if(option.value === hall){
-            select.value = option.value;
-            break;
-        }
-    }
-
-    select.disabled = true;
+    // 🔥 delay to ensure DOM is ready before disabling
+    setTimeout(() => {
+        select.disabled = true;
+    }, 50);
 }
-
 
 
 /* AJAX POPUP */
@@ -37,10 +27,10 @@ async function submitBooking(){
 
     const hall = document.getElementById("hallSelect").value;
     const date = document.getElementById("bookingDate").value;
-    const start = document.getElementById("startTime").value;
-    const end = document.getElementById("endTime").value;
+    let start = convertTo24Hour(document.getElementById("startTime").value);
+    let end = convertTo24Hour(document.getElementById("endTime").value);
     const purpose = document.getElementById("purpose").value.trim();
-
+    
     if(!purpose){
     showPopup("Error","Purpose is mandatory");
     return;
@@ -221,22 +211,37 @@ async function loadMyBookings(){
 }
 
 
+
 /* Open RESHUDULE  */
+let resStartPicker, resEndPicker;
+
 function openReschedule(id){
-    closeAllModals();   // 🔥 ADD THIS
+
+    closeAllModals();
+
     resBookingId = id;
 
-    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("rescheduleModal").style.display = "flex";
 
-    document.getElementById("resDate").value = today;
+    // destroy old
+    if(resStartPicker) resStartPicker.destroy();
+    if(resEndPicker) resEndPicker.destroy();
 
-    // 🔥 ADD THESE
-    document.getElementById("resStart").value = "09:00";
-    document.getElementById("resEnd").value = "20:00";
+    // init
+    resStartPicker = flatpickr("#resStart", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K",
+        time_24hr: false
+    });
 
-    document.getElementById("rescheduleModal").style.display="flex";
+    resEndPicker = flatpickr("#resEnd", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K",
+        time_24hr: false
+    });
 }
-
 
 
 async function submitReschedule(){
@@ -289,16 +294,64 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
 });
-
 /* OPEN BOOK HALL POPUP */
+let startPicker, endPicker;
+
 function openModal(){
-    closeAllModals();   // 🔥 ADD THIS
+
+    closeAllModals();
+
     const modal = document.getElementById("bookingModal");
     const select = document.getElementById("hallSelect");
 
+    // show modal first
     modal.style.display = "flex";
+
+    // always enable by default (reserveHall will disable later if needed)
     select.disabled = false;
+
+    // 🔥 destroy old instances safely
+    if(startPicker){
+        startPicker.destroy();
+        startPicker = null;
+    }
+
+    if(endPicker){
+        endPicker.destroy();
+        endPicker = null;
+    }
+
+    // 🔥 initialize AFTER modal is visible
+    startPicker = flatpickr("#startTime", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K",
+        time_24hr: false,
+        minuteIncrement: 30,
+        clickOpens: true,
+        allowInput: false,
+
+        // ✅ FIX: prevents broken/cut UI
+        appendTo: document.body
+    });
+
+    endPicker = flatpickr("#endTime", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K",
+        time_24hr: false,
+        minuteIncrement: 30,
+        clickOpens: true,
+        allowInput: false,
+
+        // ✅ FIX: prevents broken/cut UI
+        appendTo: document.body
+    });
 }
+
+
+
+
 
 /* CLOSE POPUP */
 function closeModal(){
@@ -307,22 +360,7 @@ function closeModal(){
 }
 
 
-function reserveHall(hall){
 
-    const modal = document.getElementById("bookingModal");
-    const select = document.getElementById("hallSelect");
-
-    modal.style.display = "flex";
-
-    for(let option of select.options){
-        if(option.value === hall){
-            select.value = option.value;
-            break;
-        }
-    }
-
-    select.disabled = true;
-}
 
 function closeReschedule(){
     document.getElementById("rescheduleModal").style.display = "none";
@@ -333,7 +371,11 @@ function closeReassign() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    showDashboard();
+});
 
+document.addEventListener("DOMContentLoaded", () => {
+    
   const form = document.getElementById("bookingForm");
 
   if(form){

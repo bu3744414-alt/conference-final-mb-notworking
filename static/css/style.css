@@ -235,7 +235,7 @@ button:hover{
     justify-content: center;
     align-items: center;
 
-    z-index: 99999;   /* 🔥 force top */
+    z-index: 200000;   /* 🔥 force top */
 }
 
 .popup-box{
@@ -1133,10 +1133,10 @@ font-size:14px;
 }
 
 .modal {
+    display: none;   /* ✅ FIX */
     position: fixed;
     inset: 0;
     z-index: 100000;
-    display: flex;
     justify-content: center;
     align-items: center;
 }
@@ -1151,4 +1151,30 @@ body {
 
 .modal {
     pointer-events: auto;
+}
+.flatpickr-calendar {
+    z-index: 999999 !important;
+}
+
+.modal-box {
+    position: relative;
+    z-index: 100001;
+}
+
+.modal {
+    z-index: 100000;
+}
+.modal-box input {
+    pointer-events: auto;
+}
+/* fix flatpickr overlay issues */
+.flatpickr-calendar {
+    z-index: 999999 !important;
+}
+
+/* make disabled dropdown look locked */
+#hallSelect:disabled {
+    background-color: #eee;
+    cursor: not-allowed;
+    pointer-events: none;
 }
