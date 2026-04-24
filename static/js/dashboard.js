@@ -13,14 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-function showDashboard(){
 
-    document.getElementById("dashboardPanel").style.display="block";
-
-    document.getElementById("availabilityPanel").style.display="none";
-    document.getElementById("myBookingsPanel").style.display="none";
-    document.getElementById("adminBookingsPanel").style.display="none";
-}
 
 
 function toggleUserMenu(){
@@ -39,7 +32,7 @@ function closePopup(){
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-
+    
     const today = new Date().toISOString().split('T')[0];
 
     const bookingDate = document.getElementById("bookingDate");
@@ -74,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-
+    showDashboard(); 
     const today = new Date().toISOString().split('T')[0];
 
     const dateInput = document.getElementById("bookingDate");
