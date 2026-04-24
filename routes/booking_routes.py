@@ -8,9 +8,6 @@ COMMON_EMAIL = "conference.room@vslp.in"
 
 booking = Blueprint("booking", __name__)
 
-
-
-# ---------------- AVAILABILITY ----------------
 @booking.route('/availability')
 def availability():
     hall = request.args.get('hall')
@@ -20,52 +17,69 @@ def availability():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT
+    SELECT 
     CASE 
-        WHEN ISNULL(rescheduled,0)=1 THEN re_start_time 
-        ELSE start_time 
-    END,
+        WHEN ISNULL(reassign_flag,0)=1 THEN re_conference_id
+        ELSE conference_id
+    END AS hall,
 
     CASE 
-        WHEN ISNULL(rescheduled,0)=1 THEN re_end_time 
-        ELSE end_time 
-    END,
+        WHEN ISNULL(rescheduled,0)=1 THEN rescheduled_date
+        ELSE trn_date
+    END AS booking_date,
+
+    CASE 
+        WHEN ISNULL(rescheduled,0)=1 THEN re_start_time
+        ELSE start_time
+    END AS start_time,
+
+    CASE 
+        WHEN ISNULL(rescheduled,0)=1 THEN re_end_time
+        ELSE end_time
+    END AS end_time,
 
     department,
     empname
 
-FROM booking_transactions
+    FROM booking_transactions
 
-WHERE 
-(
-    (ISNULL(reassign_flag,0)=0 AND conference_id = ?)
-    OR
-    (ISNULL(reassign_flag,0)=1 AND re_conference_id = ?)
-)
+    WHERE 
+    (
+        (ISNULL(reassign_flag,0)=0 AND conference_id = ?)
+        OR
+        (ISNULL(reassign_flag,0)=1 AND re_conference_id = ?)
+    )
 
-AND CAST(
-    CASE 
-        WHEN ISNULL(rescheduled,0)=1 THEN rescheduled_date 
-        ELSE trn_date 
-    END AS DATE
-) = CAST(? AS DATE)
+    AND CAST(
+        CASE 
+            WHEN ISNULL(rescheduled,0)=1 THEN rescheduled_date 
+            ELSE trn_date 
+        END AS DATE
+    ) = CAST(? AS DATE)
 
-AND status='Booked'
-    """,(hall, hall, date_val))
+    AND (
+    status = 'Booked'
+    OR ISNULL(rescheduled,0) = 1
+    )
+
+    ORDER BY start_time
+    """, (hall, hall, date_val))
 
     rows = cursor.fetchall()
     conn.close()
-
+    
     data = []
 
     for r in rows:
-        start = datetime.strptime(str(r[0])[:8], "%H:%M:%S").strftime("%I:%M %p")
-        end = datetime.strptime(str(r[1])[:8], "%H:%M:%S").strftime("%I:%M %p")
+        start = datetime.strptime(str(r[2])[:8], "%H:%M:%S").strftime("%I:%M %p")
+        end = datetime.strptime(str(r[3])[:8], "%H:%M:%S").strftime("%I:%M %p")
 
-        data.append([start, end, r[2], r[3]])
+        dept = r[4]
+        user = r[5]
+
+        data.append([start, end, dept, user])
 
     return jsonify(data)
-
 #--------Checking-------------
 
 # ---------------- BOOK ----------------
