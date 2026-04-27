@@ -29,10 +29,6 @@ app.register_blueprint(main)
 app.register_blueprint(update_halls_bp)
 app.register_blueprint(email)
 
-
-
-
-# download options for the montly bookings in pdf and excel code for that 
 @app.route("/export-excel")
 def export_excel():
 
@@ -40,8 +36,16 @@ def export_excel():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT trn_date, conference_id, start_time, end_time, purpose, status
-        FROM booking_transactions
+    SELECT 
+        FORMAT(bt.trn_date, 'yyyy-MM-dd') AS trn_date,
+        c.conference_name,
+        FORMAT(bt.start_time, 'HH:mm') AS start_time,
+        FORMAT(bt.end_time, 'HH:mm') AS end_time,
+        bt.purpose,
+        bt.status
+    FROM booking_transactions bt
+    JOIN conference_master c 
+        ON bt.conference_id = c.conference_id
     """)
 
     rows = cursor.fetchall()
@@ -49,21 +53,15 @@ def export_excel():
     cursor.close()
     conn.close()
 
-    
-
-    # 🔥 FIX: Convert properly
+    # ✅ NO strftime here
     data = [list(row) for row in rows]
 
     df = pd.DataFrame(data, columns=["Date","Hall","Start","End","Purpose","Status"])
 
-    file_path = "report.xlsx"
+    file_path = "Monthly_Report.xlsx"
     df.to_excel(file_path, index=False)
 
     return send_file(file_path, as_attachment=True)
-
-
-
-
 
 @app.route("/export-pdf")
 def export_pdf():
@@ -72,11 +70,19 @@ def export_pdf():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT trn_date, conference_id, start_time, end_time, purpose, status
-        FROM booking_transactions
+    SELECT 
+        FORMAT(bt.trn_date, 'yyyy-MM-dd') AS trn_date,
+        c.conference_name,
+        FORMAT(bt.start_time, 'HH:mm') AS start_time,
+        FORMAT(bt.end_time, 'HH:mm') AS end_time,
+        bt.purpose,
+        bt.status
+    FROM booking_transactions bt
+    JOIN conference_master c 
+        ON bt.conference_id = c.conference_id
     """)
 
-    data = cursor.fetchall()
+    rows = cursor.fetchall()
 
     cursor.close()
     conn.close()
@@ -86,7 +92,8 @@ def export_pdf():
 
     table_data = [["Date", "Hall", "Start", "End", "Purpose", "Status"]]
 
-    for row in data:
+    # ✅ NO strftime here
+    for row in rows:
         table_data.append(list(row))
 
     table = Table(table_data)
@@ -95,15 +102,72 @@ def export_pdf():
 
     buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name="report.pdf")
+    return send_file(buffer, as_attachment=True, download_name="Monthly_Report.pdf")
 
+# Code for Today bookings Chart 
+@app.route("/chart/today-halls")
+def today_halls():
 
+    conn = get_connection()
+    cursor = conn.cursor()
 
+    cursor.execute("""
+        SELECT c.conference_name, COUNT(*) as total
+        FROM booking_transactions bt
+        JOIN conference_master c 
+            ON bt.conference_id = c.conference_id
+        WHERE CAST(bt.trn_date AS DATE) = CAST(GETDATE() AS DATE)
+        GROUP BY c.conference_name
+    """)
 
+    data = cursor.fetchall()
+    conn.close()
 
+    result = [{"hall": row[0], "count": row[1]} for row in data]
 
+    return jsonify(result)
 
+# Code for Montly bookings 
+@app.route("/chart/monthly-halls")
+def monthly_halls():
 
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT c.conference_name, COUNT(*) as total
+        FROM booking_transactions bt
+        JOIN conference_master c 
+            ON bt.conference_id = c.conference_id
+        WHERE FORMAT(bt.trn_date, 'yyyy-MM') = FORMAT(GETDATE(), 'yyyy-MM')
+        GROUP BY c.conference_name
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    result = [{"hall": r[0], "count": r[1]} for r in rows]
+
+    return jsonify(result)
+# Code for Department wise chart usage
+@app.route("/chart/departments")
+def department_usage():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT department, COUNT(*) 
+        FROM booking_transactions
+        GROUP BY department
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    result = [{"dept": r[0], "count": r[1]} for r in rows]
+
+    return jsonify(result)
 
 
 

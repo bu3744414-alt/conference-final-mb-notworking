@@ -238,8 +238,13 @@ async function confirmCancel(){
 let cancelBookingId = null;
 
 function openCancel(id){
-    cancelBookingId = id;
-    document.getElementById("cancelReason").value = "";
+
+    let idField = document.getElementById("cancelBookingId");
+    let reasonField = document.getElementById("cancelReason");
+
+    if(idField) idField.value = id;
+    if(reasonField) reasonField.value = "";
+
     document.getElementById("cancelModal").style.display = "flex";
 }
 
@@ -492,3 +497,115 @@ function printTable(){
     win.document.write('</body></html>');
     win.print();
 }
+
+function printAdminBookings() {
+
+    let content = document.getElementById("adminBookingsList").innerHTML;
+
+    let win = window.open('', '', 'width=900,height=700');
+
+    // ✅ get ALL styles (important fix)
+    let styles = '';
+    document.querySelectorAll("link[rel='stylesheet'], style").forEach(el => {
+        styles += el.outerHTML;
+    });
+
+    win.document.write(`
+        <html>
+        <head>
+            <title>Print Bookings</title>
+            ${styles}
+
+            <style>
+                body {
+                    padding: 20px;
+                }
+
+                h2 {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+
+                @media print {
+                    body {
+                        margin: 0;
+                    }
+                }
+            </style>
+
+        </head>
+
+        <body>
+            <h2>All Department Bookings</h2>
+            ${content}
+        </body>
+        </html>
+    `);
+
+    win.document.close();
+
+    // ✅ wait for styles to load (important)
+    win.onload = function () {
+        win.print();
+    };
+}
+function downloadAdminPDF() {
+    let element = document.getElementById("adminBookingsList");
+
+    let opt = {
+        margin: 0.5,
+        filename: 'Today-bookings.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
+
+function downloadAdminExcel() {
+    let data = [];
+    let bookings = document.querySelectorAll("#adminBookingsList .booking-card");
+
+    bookings.forEach((card, index) => {
+        data.push({
+            "Booking #": index + 1,
+            "Details": card.innerText
+        });
+    });
+
+    let worksheet = XLSX.utils.json_to_sheet(data);
+    let workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
+
+    XLSX.writeFile(workbook, "Today-bookings.xlsx");
+}
+document.addEventListener("click", function(event) {
+
+    let isButton = event.target.closest('.icon-btn');
+    let isMenu = event.target.closest('#adminMenu');
+
+    // if clicking outside button + menu → close
+    if (!isButton && !isMenu) {
+        document.getElementById("adminMenu").style.display = "none";
+    }
+});
+
+function toggleAdminMenu() {
+    let menu = document.getElementById("adminMenu");
+
+    // toggle show/hide
+    if (menu.style.display === "block") {
+        menu.style.display = "none";
+    } else {
+        menu.style.display = "block";
+    }
+}
+
+
+
+// Too open the dashboard when opened or window reloaded.
+document.addEventListener("DOMContentLoaded", function () {
+    showDashboard();
+});

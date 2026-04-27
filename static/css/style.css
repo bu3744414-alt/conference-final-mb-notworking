@@ -1209,3 +1209,53 @@ body {
 .icon-btn {
     background: #2d5be3;
 }
+.icon-btn {
+    background: #2563eb;
+    border: none;
+    color: white;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 8px 0;
+    min-width: 160px;
+    z-index: 1000;
+}
+
+.dropdown-menu div {
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+.dropdown-menu div:hover {
+    background: #f3f4f6;
+}
+.dropdown-menu {
+    transition: all 0.2s ease;
+}
+
+#todayChart, #deptChart {
+    height: 220px !important;
+}
+
+#monthlyChart {
+    height: 260px !important;
+}
+.admin-note {
+    margin: 25px 0;
+    padding: 15px 18px;
+    background: #fdecea;
+    border-left: 6px solid #dc3545;
+    color: #842029;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 15px;
+}

@@ -5,21 +5,40 @@ function closeModal(){
     document.getElementById("bookingModal").style.display = "none";
     document.getElementById("hallSelect").disabled = false;
 }
-
 function reserveHall(hall){
+
+    console.log("Clicked hall:", hall);
 
     openModal();
 
-    const select = document.getElementById("hallSelect");
-
-    // set selected hall
-    select.value = hall;
-
-    // 🔥 delay to ensure DOM is ready before disabling
     setTimeout(() => {
+
+        const select = document.getElementById("hallSelect");
+
+        console.log([...select.options].map(o => o.value));
+        // 🔥 FORCE MATCH (not relying on value only)
+        let found = false;
+
+        for(let i = 0; i < select.options.length; i++){
+            if(select.options[i].value == hall){
+                select.selectedIndex = i;
+                found = true;
+                break;
+            }
+        }
+
+        console.log("Selected index:", select.selectedIndex);
+
+        if(!found){
+            console.error("Hall NOT FOUND in dropdown!", hall);
+        }
+
+        // 🔥 freeze dropdown
         select.disabled = true;
-    }, 50);
+
+    }, 300); // 🔥 important: give DOM time
 }
+
 
 
 /* AJAX POPUP */
@@ -56,7 +75,7 @@ if(!start || !end){
 }
 
 // prevent reverse time
-if(end <= start){
+if(new Date("1970-01-01T" + end) <= new Date("1970-01-01T" + start)){
     showPopup("Error","End time must be after start time");
     return;
 }
@@ -201,7 +220,8 @@ async function loadMyBookings(){
             <div class="booking-actions">
                 ${(b.status === "Booked" && b.date >= new Date().toISOString().split('T')[0]) ? `
                 <button class="reschedule-btn"
-                onclick="openReschedule(${b.id})">
+                onclick="console.log('RAW:', '${b.start}', '${b.end}'); 
+                openReschedule(${b.id}, convertTo12Hour('${b.start}'), convertTo12Hour('${b.end}'))">
                 Reschedule
                 </button>` : ``}
             </div>
@@ -209,37 +229,84 @@ async function loadMyBookings(){
         </div>`;
     });
 }
+function convertTo24Hour(time){
 
+    if(!time) return "";
 
+    let [t, modifier] = time.split(" ");
+    let [hours, minutes] = t.split(":");
 
+    hours = parseInt(hours);
+
+    if(modifier === "PM" && hours !== 12) hours += 12;
+    if(modifier === "AM" && hours === 12) hours = 0;
+
+    // 🔥 FIX: ensure 2-digit format
+    hours = hours.toString().padStart(2, "0");
+
+    return `${hours}:${minutes}`;
+}
 /* Open RESHUDULE  */
 let resStartPicker, resEndPicker;
+async function openReschedule(id, start, end){
 
-function openReschedule(id){
-
-    closeAllModals();
+    console.log("START:", start, "END:", end); // DEBUG
 
     resBookingId = id;
 
     document.getElementById("rescheduleModal").style.display = "flex";
 
-    // destroy old
     if(resStartPicker) resStartPicker.destroy();
     if(resEndPicker) resEndPicker.destroy();
 
-    // init
+    // 🔥 Convert string → Date object
+    function toDateObj(timeStr){
+
+    if(!timeStr){
+        console.error("Empty time");
+        return new Date();
+    }
+
+    // 🔥 case 1: "09:00" (24-hour)
+    if(!timeStr.includes(" ")){
+        let [hours, minutes] = timeStr.split(":");
+
+        let d = new Date();
+        d.setHours(parseInt(hours));
+        d.setMinutes(parseInt(minutes));
+
+        return d;
+    }
+
+    // 🔥 case 2: "9:00 AM"
+    let [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    hours = parseInt(hours);
+    minutes = parseInt(minutes);
+
+    if(modifier === "PM" && hours !== 12) hours += 12;
+    if(modifier === "AM" && hours === 12) hours = 0;
+
+    let d = new Date();
+    d.setHours(hours);
+    d.setMinutes(minutes);
+
+    return d;
+}
+
     resStartPicker = flatpickr("#resStart", {
         enableTime: true,
         noCalendar: true,
         dateFormat: "h:i K",
-        time_24hr: false
+        defaultDate: toDateObj(start)   // 🔥 FIX HERE
     });
 
     resEndPicker = flatpickr("#resEnd", {
         enableTime: true,
         noCalendar: true,
         dateFormat: "h:i K",
-        time_24hr: false
+        defaultDate: toDateObj("20:00")     // 🔥 FIX HERE
     });
 }
 
@@ -247,8 +314,10 @@ function openReschedule(id){
 async function submitReschedule(){
 
     const date = document.getElementById("resDate").value;
-    const start = document.getElementById("resStart").value;
-    const end = document.getElementById("resEnd").value;
+
+    let start = convertTo24Hour(document.getElementById("resStart").value);
+    let end = convertTo24Hour(document.getElementById("resEnd").value);
+
     const reason = document.getElementById("resReason").value;
 
     if(!date || !start || !end){
@@ -263,18 +332,16 @@ async function submitReschedule(){
     fd.append("end_time",end);
     fd.append("reason",reason);
 
-    const res = await fetch(`/reschedule/${resBookingId}`,{
+    fetch(`/reschedule/${resBookingId}`,{
         method:"POST",
         body:fd
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        showPopup("Updated",data.message);
+        closeReschedule();
+        loadMyBookings();
     });
-
-    const data = await res.json();
-
-    showPopup("Updated",data.message);
-
-    closeReschedule();
-
-    loadMyBookings();
 }
 
 let resBookingId = null;
@@ -308,7 +375,10 @@ function openModal(){
     modal.style.display = "flex";
 
     // always enable by default (reserveHall will disable later if needed)
-    select.disabled = false;
+    // DO NOT force enable here
+    if(!select.hasAttribute("data-locked")){
+        select.disabled = false;
+    };
 
     // 🔥 destroy old instances safely
     if(startPicker){
@@ -321,35 +391,56 @@ function openModal(){
         endPicker = null;
     }
 
-    // 🔥 initialize AFTER modal is visible
     startPicker = flatpickr("#startTime", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "h:i K",
-        time_24hr: false,
-        minuteIncrement: 30,
-        clickOpens: true,
-        allowInput: false,
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "h:i K",
+    time_24hr: false,
+    minuteIncrement: 30,
+    enableSeconds: false,
+    allowInput: false,
+    clickOpens: true,
+    allowInput: false,
+    appendTo: document.body,
+    defaultDate: "09:00",
 
-        // ✅ FIX: prevents broken/cut UI
-        appendTo: document.body
-    });
+    // 🔥 ADD THIS
+    onChange: function(selectedDates){
+        if(selectedDates.length){
 
-    endPicker = flatpickr("#endTime", {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "h:i K",
-        time_24hr: false,
-        minuteIncrement: 30,
-        clickOpens: true,
-        allowInput: false,
+            let start = new Date(selectedDates[0]);
 
-        // ✅ FIX: prevents broken/cut UI
-        appendTo: document.body
-    });
+            // add 1 hour
+            let newEnd = new Date(start);
+            newEnd.setHours(start.getHours() + 1);
+
+            endPicker.setDate(newEnd);
+        }
+    }
+});
+
+endPicker = flatpickr("#endTime", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "h:i K",
+    time_24hr: false,
+    minuteIncrement: 30,
+    enableSeconds: false,
+    allowInput: false,
+    clickOpens: true,
+    allowInput: false,
+    appendTo: document.body,
+    defaultDate: "18:00",
+
+    // 🔥 prevent selecting before start
+    onOpen: function(){
+        let start = startPicker.selectedDates[0];
+        if(start){
+            this.set("minDate", start);
+        }
+    }
+});
 }
-
-
 
 
 
@@ -386,3 +477,143 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
+
+/* CONVERTING TO MAKE THE RESCHDULE WORK IT ONLY UNDERSTAND THE 12 HRS  */
+function convertTo12Hour(time){
+
+    if(!time) return "";
+
+    let [hours, minutes] = time.split(":");
+    hours = parseInt(hours);
+
+    let ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+
+    return `${hours}:${minutes} ${ampm}`;
+}
+// 🎨 Dynamic color generator
+function generateColors(count) {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+        let hue = Math.floor((360 / count) * i);
+        colors.push(`hsl(${hue}, 70%, 50%)`);
+    }
+    return colors;
+}
+async function loadCharts(){
+
+    if(window.todayChartInstance) window.todayChartInstance.destroy();
+    if(window.deptChartInstance) window.deptChartInstance.destroy();
+    if(window.monthlyChartInstance) window.monthlyChartInstance.destroy();
+
+    // 🎨 color generator
+    function generateColors(count) {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            let hue = Math.floor((360 / count) * i);
+            colors.push(`hsl(${hue}, 70%, 50%)`);
+        }
+        return colors;
+    }
+
+    // 🔹 TODAY
+    let today = await (await fetch("/chart/today-halls")).json();
+    const todayColors = generateColors(today.length);
+
+    window.todayChartInstance = new Chart(todayChart, {
+        type: "bar",
+        data: {
+            labels: today.map(x => x.hall),
+            datasets: [{
+                label: "Today's Usage",
+                data: today.map(x => x.count),
+                backgroundColor: todayColors
+            }]
+        },
+        plugins: [ChartDataLabels],
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "top" },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    color: 'black',
+                    font: { weight: 'bold' },
+                    formatter: (val) => val
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+
+    // 🔹 DEPARTMENT
+    let dept = await (await fetch("/chart/departments")).json();
+    const deptColors = generateColors(dept.length);
+
+    window.deptChartInstance = new Chart(deptChart, {
+        type: "pie",
+        data: {
+            labels: dept.map(x => x.dept),
+            datasets: [{
+                data: dept.map(x => x.count),
+                backgroundColor: deptColors
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // custom legend (already shows count ✅)
+    let html = "";
+    dept.forEach((d, i) => {
+        html += `
+        <div style="display:flex; align-items:center; margin-bottom:8px;">
+            <div style="width:12px;height:12px;background:${deptColors[i]};margin-right:8px;"></div>
+            <span style="flex:1;">${d.dept}</span>
+            <b>${d.count}</b>
+        </div>`;
+    });
+    deptLegend.innerHTML = html;
+
+    // 🔹 MONTHLY
+    let monthly = await (await fetch("/chart/monthly-halls")).json();
+    const monthlyColors = generateColors(monthly.length);
+
+    window.monthlyChartInstance = new Chart(monthlyChart, {
+        type: "bar",
+        data: {
+            labels: monthly.map(x => x.hall),
+            datasets: [{
+                label: "Monthly Usage",
+                data: monthly.map(x => x.count),
+                backgroundColor: monthlyColors
+            }]
+        },
+        plugins: [ChartDataLabels],
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "top" },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    color: 'black',
+                    font: { weight: 'bold' },
+                    formatter: (val) => val
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+}

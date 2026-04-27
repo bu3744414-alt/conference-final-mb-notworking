@@ -92,6 +92,23 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+// 🔥 ADD THIS AT TOP
+let chartsLoaded = false;
+
+function showDashboard(){
+
+    document.getElementById("dashboardPanel").style.display="block";
+    document.getElementById("availabilityPanel").style.display="none";
+    document.getElementById("myBookingsPanel").style.display="none";
+    document.getElementById("adminBookingsPanel").style.display="none";
+
+    // 🔥 LOAD ONLY ONCE
+    if(!chartsLoaded){
+        loadCharts();
+        chartsLoaded = true;
+    }
+}
+
 function showDashboard(){
 
     document.getElementById("dashboardPanel").style.display="block";
@@ -99,6 +116,13 @@ function showDashboard(){
     document.getElementById("availabilityPanel").style.display="none";
     document.getElementById("myBookingsPanel").style.display="none";
     document.getElementById("adminBookingsPanel").style.display="none";
+
+    // 🔥 ADD THIS
+    // 🔥 LOAD ONLY ONCE
+    if(!chartsLoaded){
+        loadCharts();
+        chartsLoaded = true;
+    }
 }
 
 function toggleUserMenu(){

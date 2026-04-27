@@ -65,3 +65,10 @@
     {% endfor %}
 
 </div>
+
+<!-- ✅ ADD NOTE HERE -->
+{% if role != 'admin' %}
+<div class="admin-note">
+    <strong>Note:</strong> Auditorium booking is restricted. Only Admins are allowed to reserve it.
+</div>
+{% endif %}

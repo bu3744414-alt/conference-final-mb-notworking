@@ -81,7 +81,6 @@ def availability():
 
     return jsonify(data)
 #--------Checking-------------
-
 # ---------------- BOOK ----------------
 @booking.route('/book', methods=['POST'])
 def book():
@@ -93,9 +92,11 @@ def book():
     meeting_date = request.form['date']
     start = request.form['start_time']
     end = request.form['end_time']
-    # 🔒 ADD HERE
+
+    # 🔒 Only admin can book auditorium
     if hall == '201' and session.get('role') != 'admin':
         return jsonify(status="error", message="Only admin can book Auditorium")
+
     department = request.form.get('department')
     purpose = request.form.get('purpose')
 
@@ -105,32 +106,37 @@ def book():
     else:
         dept_to_book = session['dept']
 
+    # ✅ 🔥 FIX: Convert to datetime for proper comparison
+    try:
+        start_time_obj = datetime.strptime(start, "%H:%M")
+        end_time_obj = datetime.strptime(end, "%H:%M")
+    except:
+        return jsonify(status="error", message="Invalid time format")
+
+    # ⏱ VALIDATIONS
+    if end_time_obj <= start_time_obj:
+        return jsonify(status="error", message="End time must be after start time")
+
+    if start_time_obj.hour < 9 or end_time_obj.hour > 20:
+        return jsonify(status="error", message="Booking allowed only between 9 AM and 8 PM")
+
     conn = get_connection()
     cursor = conn.cursor()
 
     # 🔍 CONFLICT CHECK
     cursor.execute("""
-    SELECT start_time, end_time, department, empname
-    FROM booking_transactions
-    WHERE 
-    (
-        (ISNULL(reassign_flag,0)=0 AND conference_id = ?)
-        OR
-        (ISNULL(reassign_flag,0)=1 AND re_conference_id = ?)
-    )
-    AND CAST(trn_date AS DATE) = CAST(? AS DATE)
-    AND status='Booked'
-    AND (? < end_time AND ? > start_time)
+        SELECT start_time, end_time, department, empname
+        FROM booking_transactions
+        WHERE 
+        (
+            (ISNULL(reassign_flag,0)=0 AND conference_id = ?)
+            OR
+            (ISNULL(reassign_flag,0)=1 AND re_conference_id = ?)
+        )
+        AND CAST(trn_date AS DATE) = CAST(? AS DATE)
+        AND status='Booked'
+        AND (? < end_time AND ? > start_time)
     """, (hall, hall, meeting_date, start, end))
-
-    # ⏱ VALIDATIONS
-    if end <= start:
-        conn.close()
-        return jsonify(status="error", message="End time must be after start time")
-
-    if start < "09:00" or end > "20:00":
-        conn.close()
-        return jsonify(status="error", message="Booking allowed only between 9 AM and 8 PM")
 
     conflict = cursor.fetchone()
 
@@ -150,10 +156,10 @@ def book():
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     cursor.execute("""
-    INSERT INTO booking_transactions
-    (empno, empname, conference_id, department, trn_date,
-     start_time, end_time, booked_on, purpose, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO booking_transactions
+        (empno, empname, conference_id, department, trn_date,
+         start_time, end_time, booked_on, purpose, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         session['empno'],
         session['user'],
@@ -167,9 +173,9 @@ def book():
         "Booked"
     ))
 
-    # 🔥 GET USER EMAIL BEFORE CLOSING CONNECTION
+    # 🔥 GET USER EMAIL
     cursor.execute("""
-    SELECT email FROM login_mas WHERE employee_id=?
+        SELECT email FROM login_mas WHERE employee_id=?
     """, (session['empno'],))
 
     email_row = cursor.fetchone()
@@ -177,10 +183,10 @@ def book():
 
     # 🔥 GET HALL NAME
     cursor.execute("""
-SELECT conference_name 
-FROM conference_master 
-WHERE conference_id = ?
-""", (hall,))
+        SELECT conference_name 
+        FROM conference_master 
+        WHERE conference_id = ?
+    """, (hall,))
 
     hall_row = cursor.fetchone()
     hall_name = hall_row[0] if hall_row else hall
@@ -189,30 +195,25 @@ WHERE conference_id = ?
     conn.close()
 
     # 🔥 SEND EMAIL
-    # 🔥 ALWAYS CREATE BODY
     body = build_email_template(
-    "Booking Created",
-    session['user'],
-    hall_name,
-    meeting_date,
-    start,
-    end,
-    purpose
+        "Booking Created",
+        session['user'],
+        hall_name,
+        meeting_date,
+        start,
+        end,
+        purpose
     )
 
-# send to user
     recipients = []
-
     if user_email:
         recipients.append(user_email)
 
     recipients.append(COMMON_EMAIL)
-    
+
     send_email(recipients, "Booking Successful", body)
 
     return jsonify(status="success", message="Booking Successful")
-
-
 
 
 #-------HALL STATS
