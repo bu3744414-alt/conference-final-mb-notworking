@@ -207,8 +207,12 @@ function convertTo24Hour(time) {
 
 
 
-/* Cancel Booking  */
 async function confirmCancel(){
+
+    if(!cancelBookingId){
+        showPopup("Error","No booking selected");
+        return;
+    }
 
     const reason = document.getElementById("cancelReason").value.trim();
 
@@ -230,19 +234,18 @@ async function confirmCancel(){
     showPopup("Cancelled", data.message);
 
     closeCancel();
-
-    loadAdminBookings();   // reload admin bookings
+    loadAdminBookings();
 }
-
-
 let cancelBookingId = null;
 
 function openCancel(id){
-
-    let idField = document.getElementById("cancelBookingId");
+    
+    console.log("Received ID:", id);   // ✅ correct debug
+    cancelBookingId = id; 
+    
     let reasonField = document.getElementById("cancelReason");
 
-    if(idField) idField.value = id;
+    
     if(reasonField) reasonField.value = "";
 
     document.getElementById("cancelModal").style.display = "flex";
@@ -252,7 +255,10 @@ function closeCancel(){
     document.getElementById("cancelModal").style.display = "none";
 }
 
-
+function closeCancel(){
+    document.getElementById("cancelModal").style.display = "none";
+    cancelBookingId = null;  // reset
+}
 
 /*
 async function addHall(){

@@ -4,7 +4,7 @@ from datetime import datetime, date
 from utils.email_service import send_email, build_email_template
 
 
-COMMON_EMAIL = "conference.room@vslp.in"
+COMMON_EMAIL = "priyanka.y@vslp.in"
 
 booking = Blueprint("booking", __name__)
 

@@ -4,10 +4,10 @@ from email.mime.multipart import MIMEMultipart
 from flask import Blueprint
 email = Blueprint("email", __name__)
 
-COMMON_EMAIL = "conference.room@vslp.in"
+COMMON_EMAIL = "priyanka.y@vslp.in"
 
-EMAIL = "aadisaineekshay@gmail.com"
-PASSWORD = "onmd qetc ctaz ugco"
+EMAIL = "vslphyd26@gmail.com"
+PASSWORD = "dwie faxh rapw imit"
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
