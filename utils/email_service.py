@@ -6,8 +6,8 @@ email = Blueprint("email", __name__)
 
 COMMON_EMAIL = "conference.room@vslp.in"
 
-EMAIL = "bu3744414@gmail.com"
-PASSWORD = "ufjp buck hipu kpwy"
+EMAIL = "aadisaineekshay@gmail.com"
+PASSWORD = "onmd qetc ctaz ugco"
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587

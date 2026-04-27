@@ -501,8 +501,16 @@ function generateColors(count) {
     }
     return colors;
 }
+
 async function loadCharts(){
 
+
+    // ✅ ADD IT HERE (TOP of function)
+    const todayChart = document.getElementById("todayChart").getContext("2d");
+    const monthlyChart = document.getElementById("monthlyChart").getContext("2d");
+    const deptChart = document.getElementById("deptChart").getContext("2d");
+
+    // destroy old charts
     if(window.todayChartInstance) window.todayChartInstance.destroy();
     if(window.deptChartInstance) window.deptChartInstance.destroy();
     if(window.monthlyChartInstance) window.monthlyChartInstance.destroy();
@@ -528,7 +536,9 @@ async function loadCharts(){
             datasets: [{
                 label: "Today's Usage",
                 data: today.map(x => x.count),
-                backgroundColor: todayColors
+                backgroundColor: todayColors,
+                barPercentage: 0.3,
+                categoryPercentage: 0.4
             }]
         },
         plugins: [ChartDataLabels],
@@ -538,15 +548,23 @@ async function loadCharts(){
             plugins: {
                 legend: { position: "top" },
                 datalabels: {
-                    anchor: 'end',
-                    align: 'top',
+                    anchor: 'end',// 🔥 moves it slightly above bar
+                    align: 'end',// 🔥 spacing from bar
+                    offset: 10, 
                     color: 'black',
-                    font: { weight: 'bold' },
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
                     formatter: (val) => val
                 }
             },
             scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { stepSize: 1 },
+                    grace: '20%'
+                }
             }
         }
     });
@@ -575,9 +593,9 @@ async function loadCharts(){
     let html = "";
     dept.forEach((d, i) => {
         html += `
-        <div style="display:flex; align-items:center; margin-bottom:8px;">
+        <div>
             <div style="width:12px;height:12px;background:${deptColors[i]};margin-right:8px;"></div>
-            <span style="flex:1;">${d.dept}</span>
+            <span>${d.dept}</span>
             <b>${d.count}</b>
         </div>`;
     });
