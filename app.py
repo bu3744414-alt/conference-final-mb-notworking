@@ -36,7 +36,7 @@ def export_excel():
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT 
+    SELECT
         FORMAT(bt.trn_date, 'yyyy-MM-dd') AS trn_date,
         c.conference_name,
         FORMAT(bt.start_time, 'HH:mm') AS start_time,
@@ -44,7 +44,7 @@ def export_excel():
         bt.purpose,
         bt.status
     FROM booking_transactions bt
-    JOIN conference_master c 
+    JOIN conference_master c
         ON bt.conference_id = c.conference_id
     """)
 
@@ -70,7 +70,7 @@ def export_pdf():
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT 
+    SELECT
         FORMAT(bt.trn_date, 'yyyy-MM-dd') AS trn_date,
         c.conference_name,
         FORMAT(bt.start_time, 'HH:mm') AS start_time,
@@ -78,7 +78,7 @@ def export_pdf():
         bt.purpose,
         bt.status
     FROM booking_transactions bt
-    JOIN conference_master c 
+    JOIN conference_master c
         ON bt.conference_id = c.conference_id
     """)
 
@@ -104,7 +104,7 @@ def export_pdf():
 
     return send_file(buffer, as_attachment=True, download_name="Monthly_Report.pdf")
 
-# Code for Today bookings Chart 
+# Code for Today bookings Chart
 @app.route("/chart/today-halls")
 def today_halls():
 
@@ -114,7 +114,7 @@ def today_halls():
     cursor.execute("""
         SELECT c.conference_name, COUNT(*) as total
         FROM booking_transactions bt
-        JOIN conference_master c 
+        JOIN conference_master c
             ON bt.conference_id = c.conference_id
         WHERE CAST(bt.trn_date AS DATE) = CAST(GETDATE() AS DATE)
         GROUP BY c.conference_name
@@ -127,7 +127,7 @@ def today_halls():
 
     return jsonify(result)
 
-# Code for Montly bookings 
+# Code for Montly bookings
 @app.route("/chart/monthly-halls")
 def monthly_halls():
 
@@ -137,7 +137,7 @@ def monthly_halls():
     cursor.execute("""
         SELECT c.conference_name, COUNT(*) as total
         FROM booking_transactions bt
-        JOIN conference_master c 
+        JOIN conference_master c
             ON bt.conference_id = c.conference_id
         WHERE FORMAT(bt.trn_date, 'yyyy-MM') = FORMAT(GETDATE(), 'yyyy-MM')
         GROUP BY c.conference_name
@@ -157,7 +157,7 @@ def department_usage():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT department, COUNT(*) 
+        SELECT department, COUNT(*)
         FROM booking_transactions
         GROUP BY department
     """)
