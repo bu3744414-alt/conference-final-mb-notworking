@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, redirect, session, jsonify, s
 from database.db import get_connection
 from reportlab.platypus import SimpleDocTemplate, Table
 import pandas as pd
+from waitress import serve
 
 app = Flask(__name__)
 app.secret_key = "secret123"
@@ -172,6 +173,6 @@ def department_usage():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    serve(app, host="0.0.0.0", port=5000)
 
 # Application is created by AADI SAI NEEKSHAY(IT Intern) if any software wants to be created or maintained contact:aadisaineekshay@gmail.com

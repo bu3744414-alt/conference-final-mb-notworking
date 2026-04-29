@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify, session, render_template, redirect
 from database.db import get_connection
-from datetime import datetime, date
+from datetime import datetime, date , timedelta
+from flask import jsonify, request, session
 from utils.email_service import send_email, build_email_template
 
 
-COMMON_EMAIL = "priyanka.y@vslp.in"
+COMMON_EMAIL = "#priyanka.y@vslp.in"
 
 booking = Blueprint("booking", __name__)
 
@@ -756,39 +757,44 @@ ORDER BY start_time
 
     return jsonify(data)
 
+
+
 @booking.route('/monthly_bookings')
 def monthly_bookings():
 
     if not session.get('user'):
         return jsonify([])
 
-    month = request.args.get("month")   # example: 2026-03
+    empno = session.get('empno')
+    month = request.args.get("month")
+
+    if not empno or not month:
+        return jsonify([])
 
     conn = get_connection()
     cur = conn.cursor()
 
-    
     cur.execute("""
     SELECT 
-    bt.TRN_DATE,
+        bt.TRN_DATE,
 
-    CASE 
-        WHEN ISNULL(bt.reassign_flag,0)=1 
-            THEN cm1.conference_name + ' -> ' + cm2.conference_name
-        ELSE cm1.conference_name
-    END AS hall,
+        CASE 
+            WHEN ISNULL(bt.reassign_flag,0)=1 
+                THEN cm1.conference_name + ' -> ' + cm2.conference_name
+            ELSE cm1.conference_name
+        END AS hall,
 
-    bt.start_time,
-    bt.end_time,
-    bt.purpose,
+        bt.start_time,
+        bt.end_time,
+        bt.purpose,
 
-    CASE 
-        WHEN bt.status = 'Cancelled' THEN 'Cancelled'
-        WHEN ISNULL(bt.rescheduled,0)=1 THEN 'Rescheduled'
-        WHEN ISNULL(bt.reassign_flag,0)=1 THEN 'Reassigned'
-        WHEN bt.status = 'Booked' THEN 'Booked'
-        ELSE bt.status
-    END AS status
+        CASE 
+            WHEN bt.status = 'Cancelled' THEN 'Cancelled'
+            WHEN ISNULL(bt.rescheduled,0)=1 THEN 'Rescheduled'
+            WHEN ISNULL(bt.reassign_flag,0)=1 THEN 'Reassigned'
+            WHEN bt.status = 'Booked' THEN 'Booked'
+            ELSE bt.status
+        END AS status
 
     FROM booking_transactions bt
 
@@ -799,28 +805,28 @@ def monthly_bookings():
         ON bt.re_conference_id = cm2.conference_id
 
     WHERE bt.empno = ?
-    AND bt.TRN_DATE LIKE ?
+    AND CONVERT(VARCHAR(7), bt.TRN_DATE, 120) = ?
 
     ORDER BY 
         bt.TRN_DATE ASC,
         bt.conference_id ASC,
         bt.start_time ASC
-    """, (session['empno'], month + "%"))
+    """, (empno, month))
 
     rows = cur.fetchall()
-
     conn.close()
 
-    data = []
-
-    for r in rows:
-        data.append({
-            "trn_date": str(r[0]),
-            "hall": r[1],
-            "start_time": str(r[2]),
-            "end_time": str(r[3]),
-            "purpose": r[4],
-            "status": r[5]
-        })
+    data = [{
+        "trn_date": str(r[0]),
+        "hall": r[1],
+        "start_time": str(r[2]),
+        "end_time": str(r[3]),
+        "purpose": r[4],
+        "status": r[5]
+    } for r in rows]
 
     return jsonify(data)
+
+
+
+

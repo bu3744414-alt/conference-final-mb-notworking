@@ -461,9 +461,7 @@ function closeReassign() {
     document.getElementById("reassignModal").style.display = "none";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    showDashboard();
-});
+
 
 document.addEventListener("DOMContentLoaded", () => {
     

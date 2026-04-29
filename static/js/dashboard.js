@@ -1,4 +1,4 @@
-
+// my secound code which is acutaully running and causing the problem 
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    showDashboard(); 
+    
     const today = new Date().toISOString().split('T')[0];
 
     const dateInput = document.getElementById("bookingDate");
@@ -95,19 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // 🔥 ADD THIS AT TOP
 let chartsLoaded = false;
 
-function showDashboard(){
-
-    document.getElementById("dashboardPanel").style.display="block";
-    document.getElementById("availabilityPanel").style.display="none";
-    document.getElementById("myBookingsPanel").style.display="none";
-    document.getElementById("adminBookingsPanel").style.display="none";
-
-    // 🔥 LOAD ONLY ONCE
-    if(!chartsLoaded){
-        loadCharts();
-        chartsLoaded = true;
-    }
-}
 
 function showDashboard(){
 
@@ -224,13 +211,35 @@ function openMonthlyBookings(){
 }*/
 
 
+function openMyBookings(){
+
+    document.getElementById("dashboardPanel").style.display="none";
+    document.getElementById("availabilityPanel").style.display="none";
+    document.getElementById("adminBookingsPanel").style.display="none";
+
+    document.getElementById("myBookingsPanel").style.display="block";
+    document.getElementById("monthlyBookingsPanel").style.display="block";
+
+    // ✅ FIX: run AFTER UI is visible
+    setTimeout(() => {
+        loadFromDate();
+    }, 50);
+}
 
 async function loadMonthlyBookings(month){
 
     if(!month){
-        const date = document.getElementById("myBookingDate").value;
-        month = date.substring(0,7);
+        const dateInput = document.getElementById("myBookingDate");
+
+        if(dateInput && dateInput.value){
+            month = dateInput.value.substring(0,7);
+        } else {
+            // ✅ fallback (VERY IMPORTANT)
+            month = new Date().toISOString().slice(0,7);
+        }
     }
+
+    console.log("📡 FINAL MONTH:", month);  // debug
 
     const res = await fetch("/monthly_bookings?month=" + month);
     const data = await res.json();
@@ -244,9 +253,9 @@ async function loadMonthlyBookings(month){
     }
 
     data.forEach(b => {
-
         const d = b.trn_date.split(" ")[0].split("-");
         const formattedDate = `${d[2]}-${d[1]}-${d[0]}`;
+
         list.innerHTML += `
         <tr>
             <td>${formattedDate}</td>
@@ -255,36 +264,40 @@ async function loadMonthlyBookings(month){
             <td>${b.end_time.substring(0,5)}</td>
             <td>${b.purpose}</td>
             <td>${b.status}</td>
-        </tr>
-        `;
-
+        </tr>`;
     });
-
 }
 
+async function loadFromDate(){
 
+    let dateInput = document.getElementById("myBookingDate");
+    let date = dateInput.value;
 
-function loadFromDate(){
+    if(!date){
+        date = new Date().toISOString().split("T")[0];
+        dateInput.value = date;
+    }
 
-    const date = document.getElementById("myBookingDate").value;
-    if(!date) return;
-
-    const month = date.substring(0,7);
-
-    loadMyBookings();                     // daily bookings
-    
-    loadMonthlyBookings();                // monthly bookings
+    await loadMyBookings();
+    await loadMonthlyBookings(); // ✅ no param
 }
-document.getElementById("myBookingDate")
-.addEventListener("change", loadFromDate);
+
+const dateInput = document.getElementById("myBookingDate");
+
+if(dateInput){
+    dateInput.addEventListener("change", loadFromDate);
+}
 
 window.addEventListener("DOMContentLoaded", () => {
 
     const today = new Date().toISOString().split("T")[0];
-    document.getElementById("myBookingDate").value = today;
+    const dateInput = document.getElementById("myBookingDate");
 
-    loadFromDate();
+    if(dateInput){
+        dateInput.value = today;
+    }
 
+    showDashboard(); // ✅ default page
 });
 
 function openRescheduleModal(booking) {
