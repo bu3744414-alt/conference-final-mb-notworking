@@ -146,103 +146,83 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 /* MONTHLY BOOKINGS */
 /* MONTHLY BOOKINGS */
-function openMonthlyBookings(){
 
-    document.getElementById("dashboardPanel").style.display="none";
-    document.getElementById("availabilityPanel").style.display="none";
-    document.getElementById("myBookingsPanel").style.display="none";
-    document.getElementById("adminBookingsPanel").style.display="none";
 
-    document.getElementById("monthlyBookingsPanel").style.display="block";
+async function loadFromDate(){
 
-    // ⭐ auto select current month
-    const monthInput = document.getElementById("monthYear");
+    let dateInput = document.getElementById("myBookingDate");
 
-    if(monthInput && !monthInput.value){
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2,'0');
-
-        monthInput.value = `${year}-${month}`;
+    // ✅ FORCE DEFAULT DATE FIRST
+    if(!dateInput.value){
+        const today = new Date().toISOString().split("T")[0];
+        dateInput.value = today;
     }
 
-    // ⭐ auto load bookings
-    loadMonthlyBookings();
+    const date = dateInput.value;
+
+    console.log("DATE USED 👉", date);
+
+    await loadMyBookings();
+
+    // ✅ NOW month will NEVER be empty
+    await loadMonthlyBookings();
 }
-
-// MONTLY DATA TO LOAD DIRECTLY FROM THE MONTH AND YEAR PICKER JAVASCRIPT CODE 
-/*async function loadMonthlyBookings(){
-
-    const monthYear = document.getElementById("monthYear").value;
-
-    if(!monthYear){
-        alert("Select month");
-        return;
-    }
-
-    const format = monthYear; // 2026-03
-
-    const res = await fetch("/monthly_bookings?month=" + format);
-    const data = await res.json();
-
-    const list = document.getElementById("monthlyTableBody");
-    list.innerHTML = "";
-
-    if(data.length === 0){
-        list.innerHTML = "<tr><td colspan='6'>No bookings found</td></tr>";
-        return;
-    }
-    const today = new Date().toISOString().split("T")[0];
-    data.forEach(b => {
-
-        list.innerHTML += `
-        <tr>
-            <td>${b.trn_date.split(" ")[0]}</td>
-            <td>${b.hall}</td>
-            <td>${b.start_time.substring(0,5)}</td>
-            <td>${b.end_time.substring(0,5)}</td>
-            <td>${b.purpose}</td>
-            <td>${b.status}</td>
-        </tr>
-        `;
-        console.log("Monthly bookings loading...");
-    });
-
-}*/
 
 
 function openMyBookings(){
 
-    document.getElementById("dashboardPanel").style.display="none";
-    document.getElementById("availabilityPanel").style.display="none";
-    document.getElementById("adminBookingsPanel").style.display="none";
+    console.log("OPEN MY BOOKINGS CLICKED");
 
-    document.getElementById("myBookingsPanel").style.display="block";
-    document.getElementById("monthlyBookingsPanel").style.display="block";
+    const dashboard = document.getElementById("dashboardPanel");
+    const availability = document.getElementById("availabilityPanel");
+    const admin = document.getElementById("adminBookingsPanel");
+    const myPanel = document.getElementById("myBookingsPanel");
 
-    // ✅ FIX: run AFTER UI is visible
-    setTimeout(() => {
-        loadFromDate();
-    }, 50);
-}
+    // ✅ SAFE HIDING
+    if(dashboard) dashboard.style.display = "none";
+    if(availability) availability.style.display = "none";
+    if(admin) admin.style.display = "none";
 
-async function loadMonthlyBookings(month){
-
-    if(!month){
-        const dateInput = document.getElementById("myBookingDate");
-
-        if(dateInput && dateInput.value){
-            month = dateInput.value.substring(0,7);
-        } else {
-            // ✅ fallback (VERY IMPORTANT)
-            month = new Date().toISOString().slice(0,7);
-        }
+    // ✅ SAFE SHOW
+    if(myPanel) myPanel.style.display = "block";
+    else {
+        console.error("❌ myBookingsPanel not found");
+        return;
     }
 
-    console.log("📡 FINAL MONTH:", month);  // debug
+    // ✅ DATE SET
+    const dateInput = document.getElementById("myBookingDate");
+
+    if(dateInput && !dateInput.value){
+        dateInput.value = new Date().toISOString().split("T")[0];
+    }
+
+    console.log("DATE SET 👉", dateInput ? dateInput.value : "NOT FOUND");
+
+    // ✅ LOAD DATA
+    loadFromDate();
+}
+
+async function loadMonthlyBookings(){
+
+    const dateInput = document.getElementById("myBookingDate");
+
+    let date = dateInput.value;
+
+    // ✅ EXTRA SAFETY
+    if(!date){
+        date = new Date().toISOString().split("T")[0];
+        dateInput.value = date;
+    }
+
+    const month = date.substring(0,7);
+
+    console.log("MONTH SENT 👉", month);
 
     const res = await fetch("/monthly_bookings?month=" + month);
     const data = await res.json();
+
+    console.log("DATA RECEIVED 👉", data);
 
     const list = document.getElementById("monthlyTableBody");
     list.innerHTML = "";
@@ -264,23 +244,11 @@ async function loadMonthlyBookings(month){
             <td>${b.end_time.substring(0,5)}</td>
             <td>${b.purpose}</td>
             <td>${b.status}</td>
-        </tr>`;
+        </tr>
+        `;
     });
 }
 
-async function loadFromDate(){
-
-    let dateInput = document.getElementById("myBookingDate");
-    let date = dateInput.value;
-
-    if(!date){
-        date = new Date().toISOString().split("T")[0];
-        dateInput.value = date;
-    }
-
-    await loadMyBookings();
-    await loadMonthlyBookings(); // ✅ no param
-}
 
 const dateInput = document.getElementById("myBookingDate");
 
@@ -294,10 +262,11 @@ window.addEventListener("DOMContentLoaded", () => {
     const dateInput = document.getElementById("myBookingDate");
 
     if(dateInput){
-        dateInput.value = today;
+        dateInput.value = today;  // ✅ THIS IS CRITICAL
+        dateInput.addEventListener("change", loadFromDate);
     }
 
-    showDashboard(); // ✅ default page
+    showDashboard();
 });
 
 function openRescheduleModal(booking) {

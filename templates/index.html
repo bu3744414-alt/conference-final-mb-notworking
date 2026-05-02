@@ -24,7 +24,7 @@
         <ul>
             <li onclick="showDashboard()">Dashboard</li>
             <li onclick="openModal()">Book Hall</li>
-            <li onclick="loadMyBookings()">My Bookings</li>
+            <li onclick="openMyBookings()">My Bookings</li>
             <li onclick="openAvailability()">Availability</li>
             <!--<li onclick="openMonthlyBookings()">Monthly Bookings</li>-->
             {% if role == 'admin' %}
@@ -120,7 +120,7 @@
 <div id="myBookingsPanel" style="display:none; margin-top:30px;">
 
     <!-- 🔥 HALLS -->
-    <h2 style="margin-bottom:10px;">Available Halls</h2>
+    
     {% include 'halls.html' %}
 
 

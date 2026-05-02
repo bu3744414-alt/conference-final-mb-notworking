@@ -4,7 +4,7 @@ from database.db import get_connection
 import pandas as pd
 from utils.email_service import send_email, build_email_template
 
-COMMON_EMAIL = "#priyanka.y@vslp.in"
+COMMON_EMAIL = "priyanka.y@vslp.in"
 
 admin = Blueprint("admin", __name__)
 

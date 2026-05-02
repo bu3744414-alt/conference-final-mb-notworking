@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from flask import Blueprint
 email = Blueprint("email", __name__)
 
-COMMON_EMAIL = "#priyanka.y@vslp.in"
+COMMON_EMAIL = "priyanka.y@vslp.in"
 
 EMAIL = "vslphyd26@gmail.com"
 PASSWORD = "dwie faxh rapw imit"

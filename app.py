@@ -160,6 +160,7 @@ def department_usage():
     cursor.execute("""
         SELECT department, COUNT(*)
         FROM booking_transactions
+        WHERE FORMAT(trn_date, 'yyyy-MM') = FORMAT(GETDATE(), 'yyyy-MM')
         GROUP BY department
     """)
 

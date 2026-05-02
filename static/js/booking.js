@@ -502,18 +502,16 @@ function generateColors(count) {
 
 async function loadCharts(){
 
-
-    // ✅ ADD IT HERE (TOP of function)
     const todayChart = document.getElementById("todayChart").getContext("2d");
     const monthlyChart = document.getElementById("monthlyChart").getContext("2d");
     const deptChart = document.getElementById("deptChart").getContext("2d");
 
-    // destroy old charts
+    // 🔥 Destroy old charts (prevents overlap bugs)
     if(window.todayChartInstance) window.todayChartInstance.destroy();
     if(window.deptChartInstance) window.deptChartInstance.destroy();
     if(window.monthlyChartInstance) window.monthlyChartInstance.destroy();
 
-    // 🎨 color generator
+    // 🎨 Dynamic Color Generator
     function generateColors(count) {
         const colors = [];
         for (let i = 0; i < count; i++) {
@@ -523,7 +521,9 @@ async function loadCharts(){
         return colors;
     }
 
-    // 🔹 TODAY
+    // =========================
+    // 🔹 TODAY CHART
+    // =========================
     let today = await (await fetch("/chart/today-halls")).json();
     const todayColors = generateColors(today.length);
 
@@ -536,7 +536,8 @@ async function loadCharts(){
                 data: today.map(x => x.count),
                 backgroundColor: todayColors,
                 barPercentage: 0.3,
-                categoryPercentage: 0.4
+                categoryPercentage: 0.4,
+                borderRadius: 8
             }]
         },
         plugins: [ChartDataLabels],
@@ -546,9 +547,9 @@ async function loadCharts(){
             plugins: {
                 legend: { position: "top" },
                 datalabels: {
-                    anchor: 'end',// 🔥 moves it slightly above bar
-                    align: 'end',// 🔥 spacing from bar
-                    offset: 10, 
+                    anchor: 'end',
+                    align: 'end',
+                    offset: 10,
                     color: 'black',
                     font: {
                         weight: 'bold',
@@ -559,7 +560,7 @@ async function loadCharts(){
             },
             scales: {
                 y: { 
-                    beginAtZero: true, 
+                    beginAtZero: true,
                     ticks: { stepSize: 1 },
                     grace: '20%'
                 }
@@ -567,7 +568,9 @@ async function loadCharts(){
         }
     });
 
-    // 🔹 DEPARTMENT
+    // =========================
+    // 🔹 DEPARTMENT CHART
+    // =========================
     let dept = await (await fetch("/chart/departments")).json();
     const deptColors = generateColors(dept.length);
 
@@ -583,23 +586,27 @@ async function loadCharts(){
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } }
+            plugins: {
+                legend: { display: false }
+            }
         }
     });
 
-    // custom legend (already shows count ✅)
+    // 🔹 Custom Legend (with count)
     let html = "";
     dept.forEach((d, i) => {
         html += `
-        <div>
+        <div style="display:flex;align-items:center;margin-bottom:6px;">
             <div style="width:12px;height:12px;background:${deptColors[i]};margin-right:8px;"></div>
-            <span>${d.dept}</span>
+            <span style="flex:1;">${d.dept}</span>
             <b>${d.count}</b>
         </div>`;
     });
     deptLegend.innerHTML = html;
 
-    // 🔹 MONTHLY
+    // =========================
+    // 🔹 MONTHLY CHART (FIXED ✅)
+    // =========================
     let monthly = await (await fetch("/chart/monthly-halls")).json();
     const monthlyColors = generateColors(monthly.length);
 
@@ -610,7 +617,10 @@ async function loadCharts(){
             datasets: [{
                 label: "Monthly Usage",
                 data: monthly.map(x => x.count),
-                backgroundColor: monthlyColors
+                backgroundColor: monthlyColors,
+                barPercentage: 0.3,          // ✅ same as today
+                categoryPercentage: 0.4,     // ✅ same as today
+                borderRadius: 8              // ✅ modern UI
             }]
         },
         plugins: [ChartDataLabels],
@@ -621,14 +631,22 @@ async function loadCharts(){
                 legend: { position: "top" },
                 datalabels: {
                     anchor: 'end',
-                    align: 'top',
+                    align: 'end',            // ✅ fixed alignment
+                    offset: 10,
                     color: 'black',
-                    font: { weight: 'bold' },
+                    font: {
+                        weight: 'bold',
+                        size: 14
+                    },
                     formatter: (val) => val
                 }
             },
             scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                y: { 
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 },
+                    grace: '20%'            // ✅ spacing fix
+                }
             }
         }
     });
